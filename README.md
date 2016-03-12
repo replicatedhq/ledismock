@@ -51,9 +51,9 @@ import (
 
 func TestMyFunc(t *testing.T) {
       db, mock, err := ledismock.New()
-	    assert.Nil(t, err)
+      assert.Nil(t, err)
       assert.NotNil(t, db)
-	    assert.NotNil(t, mock)
+      assert.NotNil(t, mock)
 
       // Replace the global db connection with a mock
 	    sharedDB = db
@@ -71,6 +71,6 @@ func TestMyFunc(t *testing.T) {
       AddOneAndTwo()
 
       err = mock.ExpectationsWereMet()
-	    assert.Nil(t, err)          
+      assert.Nil(t, err)          
 }
 ```
