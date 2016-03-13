@@ -86,8 +86,6 @@ func (m *LedisMock) ExpectationsWereMet() error {
 			return fmt.Errorf("Expectation not met: %#v", expect)
 		}
 
-		//fmt.Printf("Expect to see: %q with args %#v, saw %q with args %#v, validating...", exp.funcName, exp.args, m.received[i].funcName, m.received[i].args)
-
 		if m.received[i].funcName != exp.funcName {
 			return fmt.Errorf("Expected to see %q, but saw %q.", exp.funcName, m.received[i].funcName)
 		}
@@ -104,6 +102,14 @@ func (m *LedisMock) ExpectationsWereMet() error {
 		}
 	}
 
+	// Ensure there were no extra queries
+	if len(m.received) > len(expect) {
+		unexpected := make([]string, 0, 0)
+		for _, unex := range m.received[len(expect)-1:] {
+			unexpected = append(unexpected, fmt.Sprintf("%s %q", unex.funcName, unex.args))
+		}
+		return fmt.Errorf("Received %d unexpected queries: %#v", len(m.received)-len(expect), unexpected)
+	}
 	return nil
 }
 
@@ -146,6 +152,9 @@ func (c *Command) WithValues(values []*HashValue) *Command {
 		for _, val := range values {
 			internal = append(internal, &internalCommand{funcName: "GET", args: []string{fmt.Sprintf("\x00\x02\x00*%s:%s", c.key, val.key)}})
 		}
+
+		// And ad get on the entire hash object is the last query received
+		internal = append(internal, &internalCommand{funcName: "GET", args: []string{fmt.Sprintf("\x00\x03%s", c.key)}})
 	}
 
 	c.internal = internal
